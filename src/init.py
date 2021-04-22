@@ -23,27 +23,31 @@ from .models.custom_models import topk_LeNet, topk_VGG
 from .models import ResNet, VGG, ResNetWide
 
 
-def init_logger():
+def init_args():
+    args = get_arguments()
+    return args
+
+
+def init_logger(args, model_name):
 
     logger = logging.getLogger(__name__)
-    args = get_arguments()
-
     logging.basicConfig(
         format='[%(asctime)s] - %(message)s',
         datefmt='%Y/%m/%d %H:%M:%S',
         level=logging.INFO,
         handlers=[
-            logging.FileHandler(classifier_log_namer(args)),
+            logging.FileHandler(classifier_log_namer(model_name, args)),
             logging.StreamHandler()
             ])
     logger.info(pformat(vars(args)))
     logger.info("\n")
 
-    return logger, args
+    return logger
 
 
-def init_tensorboard(args):
-    writer = SummaryWriter(args.directory + "tensorboards/" + classifier_log_namer(args))
+def init_tensorboard(args, model_name):
+    writer = SummaryWriter(args.directory + "tensorboards/" +
+                           classifier_params_string(model_name, args))
     return writer
 
 

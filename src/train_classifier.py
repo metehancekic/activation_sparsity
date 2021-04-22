@@ -17,15 +17,18 @@ from .utils.namers import autoencoder_ckpt_namer, classifier_ckpt_namer
 
 def main():
 
-    logger, args = init_logger()
+    args = init_args()
+
     config, device = init_configuration(args)
     train_loader, test_loader, data_params = init_dataset(args)
-    writer = init_tensorboard(args)
 
     model = init_classifier(args).to(device)
     if args.pruning > 0:
         first_layer_pruner(model, amount=args.pruning)
         print(f"Started with pruned network, amount:{args.pruning}")
+
+    logger = init_logger(args, model.name())
+    writer = init_tensorboard(args, model.name())
 
     logger.info(model)
 

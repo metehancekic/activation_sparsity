@@ -17,16 +17,18 @@ from .utils.namers import autoencoder_ckpt_namer, classifier_ckpt_namer
 
 def main():
 
-    logger, args = init_logger()
+    args = init_args()
+
     config, device = init_configuration(args)
     train_loader, test_loader, data_params = init_dataset(args)
 
-    frontend = init_frontend(args)
     model = init_classifier(args).to(device)
+    logger = init_logger(args, model.name())
+    writer = init_tensorboard(args, model.name())
+
     logger.info(model)
 
-    model_name = model.model_name()
-    classifier_filepath = classifier_ckpt_namer(model_name, args)
+    classifier_filepath = classifier_ckpt_namer(model.name(), args)
     model.load_state_dict(torch.load(classifier_filepath))
 
     #--------------------------------------------------#
@@ -69,10 +71,23 @@ def main():
         )
 
     # Testing
-    NN = NeuralNetwork(model, args.classifier_arch)
-    test_loss, test_acc = NN.eval_model(
-        test_loader, adversarial_args=adversarial_args, progress_bar=True)
-    logger.info(f'Test  \t loss: {test_loss:.4f} \t acc: {test_acc:.4f}')
+    NN_args = dict(model=model,
+                   train_loader=train_loader,
+                   test_loader=test_loader,
+                   logger=logger,
+                   num_epochs=args.classifier_epochs,
+                   log_interval=args.log_interval,
+                   optimizer=optimizer,
+                   scheduler=scheduler,
+                   regularizer=args.regularizer,
+                   regularizer_decay=args.regularizer_decay,
+                   summary_writer=writer)
+
+    NN = NeuralNetwork(**NN_args)
+    test_loss, test_acc = NN.eval_model()
+    logger.info(f'Clean Test  \t loss: {test_loss:.4f} \t acc: {test_acc:.4f}')
+    test_loss, test_acc = NN.eval_model(adversarial_args=adversarial_args, progress_bar=True)
+    logger.info(f'Attacked Test  \t loss: {test_loss:.4f} \t acc: {test_acc:.4f}')
 
 
 if __name__ == "__main__":

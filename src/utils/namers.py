@@ -99,14 +99,14 @@ def classifier_ckpt_namer(model_name, args):
     return file_path
 
 
-def classifier_log_namer(args):
+def classifier_log_namer(model_name, args):
 
     file_path = args.directory + f"logs/{args.dataset}/"
 
     if not os.path.exists(file_path):
         os.makedirs(file_path)
 
-    file_path += classifier_params_string(args.classifier_arch, args)
+    file_path += classifier_params_string(model_name, args)
 
     file_path += ".log"
 
