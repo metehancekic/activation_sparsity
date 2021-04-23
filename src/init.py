@@ -46,7 +46,7 @@ def init_logger(args, model_name):
 
 
 def init_tensorboard(args, model_name):
-    writer = SummaryWriter(args.directory + "tensorboards/" +
+    writer = SummaryWriter(args.directory + f"{args.dataset}/tensorboards/" +
                            classifier_params_string(model_name, args))
     return writer
 
